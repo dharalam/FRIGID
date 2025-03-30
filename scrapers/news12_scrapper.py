@@ -5,10 +5,10 @@
 # with open('news12.json', 'w') as f:
 #     data = []
 #     for i in range(0,1000,6):
-#         r = requests.get(f'https://newjersey.news12.com/api/contentful/collection?skip={i}&categories=5UB6tVXBkd7ARvCyvOS8bO&regions=22cHKtE2AFPCc3BJGwRDiG,5g2XMQgs47iQJwz6fi9xnf,1H3vrQbJ0zU8HAcSAA9gMN,5Fh5vPC7p0LsYyI9RfLA4I,57YhTpGKbXsF2NlnDZfH0,64Yt6apvEZsviUQbS4GCsc,67ToDy2u8uXYg6Fj4qZWgH')
+#         r = requests.get(f'https://newjersey.news12.com/api/contentful/collection?skip={i}&categories=2brih7NOlAOnRZ7REArZlS&regions=22cHKtE2AFPCc3BJGwRDiG')
 #
 #         data.extend(r.json()['stories'])
-#         time.sleep(0.05)
+#         time.sleep(0.005)
 #
 #     json.dump(data, f)
 import re
@@ -40,8 +40,7 @@ class News12Spider(scrapy.Spider):
     def parse(self, response):
         # Extract post links from the subreddit page 
         
-        contents = response.xpath('//div[@gridarea="content"]/div/div/text()').getall()
-        date = response.xpath('//div[@class="sc-fsYfdN Mnyxl sc-eTNRI dPtPJq"]/p/text()').getall()
+        contents = response.xpath('//div[@gridarea="content"]').getall()
         
         yield {''.join(date): contents,}
 
