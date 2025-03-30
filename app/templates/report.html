@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Submit ICE Activity Report</h1>
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} flash-message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="form-container">
+            <p class="lead">Use this form to report ICE (Immigration and Customs Enforcement) activity in your area. This information helps our community stay informed and safe.</p>
+            
+            <form method="POST" action="/report">
+                <div class="mb-3">
+                    <label for="location" class="form-label required-field">Location</label>
+                    <input type="text" class="form-control" id="location" name="location" required 
+                           placeholder="City, town, or specific address where activity was observed">
+                    <div class="form-text">Be as specific as possible with the location.</div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="date" class="form-label required-field">Date</label>
+                        <input type="date" class="form-control" id="date" name="date" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="time" class="form-label required-field">Approximate Time</label>
+                        <input type="time" class="form-control" id="time" name="time" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label required-field">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="4" required
+                              placeholder="Describe what you observed. Include details about vehicles, number of agents, activities observed, etc."></textarea>
+                </div>
+                
+                <hr>
+                <h5>Contact Information (Optional)</h5>
+                <p class="text-muted">Your contact information will be kept confidential and only used if we need to verify details about your report.</p>
+                
+                <div class="mb-3">
+                    <label for="contact_name" class="form-label">Your Name</label>
+                    <input type="text" class="form-control" id="contact_name" name="contact_name">
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="contact_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="contact_email" name="contact_email">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="contact_phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="contact_phone" name="contact_phone">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="additional_info" class="form-label">Additional Information</label>
+                    <textarea class="form-control" id="additional_info" name="additional_info" rows="3"
+                              placeholder="Any other details that might be helpful"></textarea>
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="consent" required>
+                    <label class="form-check-label" for="consent">I understand that this information will be shared with community organizations to help protect immigrant communities.</label>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Submit Report</button>
+                </div>
+            </form>
+            
+            <div class="privacy-notice">
+                <h5>Privacy Notice</h5>
+                <p>Your privacy is important to us. Reports are sent to a secure Proton Mail account to ensure encryption and security. We do not store personal information on our servers unless you explicitly provide it. All contact information is optional and will only be used to follow up on reports if necessary.</p>
+                <p>If you prefer to remain completely anonymous, you can submit the form without providing any contact information.</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
