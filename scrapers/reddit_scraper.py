@@ -5,6 +5,7 @@ import time
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timezone
+import json
 
 load_dotenv()
 
@@ -22,7 +23,7 @@ reddit = praw.Reddit(
 # @title Scraper Configuration
 subreddit_name = "newjersey" # @param {type:"string"}
 post_limit = 1000 # @param {type:"slider", min:100, max:1000, step:100}
-output_filename = "./data/reddit_ice_info.tsv" # @param {type:"string"}
+output_filename = "../data/reddit_ice_info.json" # @param {type:"string"}
 keywords = {"ICE", "immigrant", "detain"}
 
 print(f"⚙️ Targeting r/{subreddit_name} for {post_limit} posts")
@@ -55,6 +56,7 @@ def get_comments(id):
 def scrape_subreddit():
     posts = []
     subreddit = reddit.subreddit(subreddit_name)
+    search_results = subreddit.search("ICE", sort="new", syntax="plain", limit=None)
     last_post = None
     start_time = time.time()
 
@@ -63,26 +65,22 @@ def scrape_subreddit():
     try:
         while len(posts) < post_limit:
             # Get next batch (max 100 per request)
-            batch = list(subreddit.new(
-                limit=min(100, post_limit - len(posts)),
-                params={"after": last_post} if last_post else None
-            ))
-
+            
+            batch = list(search_results)
             if not batch:
                 break  # No more posts
-
             for post in batch:
                 for kw in keywords:
-                    if kw in str(post.title) or kw in str(post.selftext) or kw in get_comments(post.id):
+                    if kw in str(post.title) or kw in str(post.selftext): #or kw in get_comments(post.id):
                         posts.append({
-                            "title": post.title,
-                            "selftext": str(post.selftext),
+                            "title": post.title if post.title else " ",
+                            "selftext": str(post.selftext) if post.selftext else " ",
                             "upvote_ratio": post.upvote_ratio,
                             "url": f"https://reddit.com{post.permalink}",
                             "num_comments": post.num_comments,
                             "id": post.id,
                             "created_utc": utc_to_datetime(post.created_utc).strftime('%Y-%m-%d %H:%M'),
-                            "comments": get_comments(post.id)
+                            #"comments": get_comments(post.id)
                         })
                         break
 
@@ -112,7 +110,7 @@ try:
 
     if df is not None and not df.is_empty():
         # Save to CSV
-        df.write_csv(output_filename, include_header=True, separator='\t')
+        json.dump(df.to_dict(as_series=False), open(output_filename, "w+"))
 except Exception as e:
     print(f"❌ Fatal error: {str(e)}")
 
