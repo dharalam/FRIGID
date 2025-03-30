@@ -283,5 +283,5 @@ def report_page():
         active_page="report"
     )
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
