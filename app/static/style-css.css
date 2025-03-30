@@ -1,6 +1,6 @@
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
+    --primary-color: rgb(157, 21, 53);
+    --secondary-color: rgb(148, 149, 148);
     --accent-color: #e74c3c;
     --light-color: #ecf0f1;
     --dark-color: #2c3e50;
@@ -66,7 +66,7 @@ body {
 }
 
 .nav-link.active {
-    color: var(--secondary-color);
+    color: var(--dark-color);
 }
 
 .nav-link.active::after {
@@ -76,7 +76,7 @@ body {
     left: 0;
     width: 100%;
     height: 3px;
-    background-color: var(--secondary-color);
+    background-color: var(--dark-color);
 }
 
 /* Responsive Navigation - Add hamburger menu for mobile */
@@ -290,6 +290,16 @@ body {
     background-color: #f8d7da;
     color: #721c24;
     border-left: 4px solid #f5c6cb;
+}
+
+.btn-primary {
+    background-color: var(--secondary-color);
+    outline-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-color);
 }
 
 /* Responsive Navigation */

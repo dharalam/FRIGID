@@ -97,7 +97,7 @@ def create_nj_map(radius=15):
     HeatMap(
         heat_data,
         radius=radius,
-        blur=15,
+        blur=radius,
         gradient={"0.4": 'blue', "0.65": 'lime', "0.9": 'orange', "1.0": 'red'}
     ).add_to(nj_map)
     
