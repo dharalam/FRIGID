@@ -20,9 +20,9 @@ reddit = praw.Reddit(
 )
 
 # @title Scraper Configuration
-subreddit_name = "newjersey" # @param {type:"string"}
+subreddit_name = "newark" # @param {type:"string"}
 post_limit = 1000 # @param {type:"slider", min:100, max:1000, step:100}
-output_filename = "./data/reddit_ice_info.tsv" # @param {type:"string"}
+output_filename = "../data/reddit_ice_newark_info.tsv" # @param {type:"string"}
 keywords = {"ICE", "immigrant", "detain"}
 
 print(f"⚙️ Targeting r/{subreddit_name} for {post_limit} posts")
@@ -73,7 +73,7 @@ def scrape_subreddit():
 
             for post in batch:
                 for kw in keywords:
-                    if kw in str(post.title) or kw in str(post.selftext) or kw in get_comments(post.id):
+                    if kw in str(post.title) or kw in str(post.selftext): # or kw in get_comments(post.id):
                         posts.append({
                             "title": post.title,
                             "selftext": str(post.selftext),
