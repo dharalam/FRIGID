@@ -43,6 +43,14 @@
                               placeholder="Describe what you observed. Include details about vehicles, number of agents, activities observed, etc."></textarea>
                 </div>
                 
+                <div class="alert alert-warning small">
+                    <strong>Warning:</strong> Please avoid including:
+                    <ul>
+                        <li>Names or identifying details of individuals</li>
+                        <li>Speculative information (stick to observed facts)</li>
+                    </ul>
+                </div>
+
                 <hr>
                 <h5>Contact Information (Optional)</h5>
                 <p class="text-muted">Your contact information will be kept confidential and only used if we need to verify details about your report.</p>
@@ -70,15 +78,45 @@
                 </div>
                 
                 <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="consent" required>
-                    <label class="form-check-label" for="consent">I understand that this information will be shared with community organizations to help protect immigrant communities.</label>
+                    <input type="checkbox" class="form-check-input" id="terms_consent" name="terms_consent" required>
+                    <label class="form-check-label" for="terms_consent">
+                        I agree to the Terms of Service and understand that:
+                        <ul class="small">
+                            <li>This is not an emergency service</li>
+                            <li>Reports are public-facing unless marked sensitive</li>
+                            <li>False reports may be removed</li>
+                        </ul>
+                    </label>
                 </div>
                 
+                <div class="legal-disclaimer small text-muted">
+                    <p>By submitting, you acknowledge that FRIGID:</p>
+                    <ul>
+                        <li>Cannot verify all reports in real-time</li>
+                        <li>Is not affiliated with any government agency</li>
+                        <li>May use anonymized data for statistical purposes</li>
+                        <li>Reserves the right to withhold publication of reports</li>
+                    </ul>
+                </div>
+
                 <div class="d-grid gap-2">
                     <button type="submit" id="form-submit" class="btn btn-primary">Submit Report</button>
                 </div>
             </form>
             
+            <h3>Legal Disclaimers</h3>
+            <div class="alert alert-warning">
+                <strong>Important Legal Information:</strong>
+                <ul>
+                    <li>FRIGID provides informational resources only, not legal advice</li>
+                    <li>We make no warranties about the accuracy or completeness of our data</li>
+                    <li>Use of this information is at your own risk</li>
+                    <li>We are not liable for any actions taken based on this information</li>
+                    <li>For legal advice, consult a qualified immigration attorney</li>
+                </ul>
+            </div>
+            <p>FRIGID complies with all applicable U.S. federal laws and New Jersey state laws. This platform is protected under Section 230 of the Communications Decency Act for third-party content.</p>
+            about
             <div class="privacy-notice">
                 <h5>Privacy Notice</h5>
                 <p>Your privacy is important to us. Reports are sent to a secure Proton Mail account to ensure encryption and security. We do not store personal information on our servers unless you explicitly provide it. All contact information is optional and will only be used to follow up on reports if necessary.</p>
