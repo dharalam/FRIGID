@@ -29,7 +29,7 @@ Listed below are all technologies that were used to develop this project:
   * A *little* help from Claude 3.7 for UI refinement
 
 ## Running FRIGID
-At present, we don't have a way to host the app in the browser (we tried Vercel but it didn't want to build properly), but it is a goal of ours in the future. For the time being, running the application locally is the only way to access it. The app relies heavily on various APIs with different secret keys that would spell disaster if they were shared, so it's a bit of a pain to run locally if you're not us. If you *really* want to run the app locally, the only things that you'll need are:
+At present, we don't have a way to host the app in the browser (we tried Vercel but it didn't want to build properly), but it is a goal of ours in the future. For the time being, running the application locally is the only way to access it. The app relies heavily on various APIs with different secret keys that would spell disaster if they were shared, so it's a bit of a pain to run locally if you're not us. Future steps include greater accessibility, however for now if you *really* want to run the app locally, the only things that you'll need are:
 1. A GMail account with an App Password for the SMTP server (GMAIL="your@gmail.com")
 2. The App Password associated with that account (GMAIL_PSWD="yourAppPassword")
 3. (Optionally) Another email address to send the Reports to (PROTONMAIL="your_other@email.com")
