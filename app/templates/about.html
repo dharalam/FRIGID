@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container">
+    <h2>About FRIGID</h2>
+    
+    <p>FRIGID (Fetching Reliable Instances of General ICE Detainments) is a community-driven platform designed to track and visualize ICE (Immigration and Customs Enforcement) activity across New Jersey. Our mission is to provide transparent, accessible information about ICE operations to help keep communities informed.</p>
+    
+    <div class="alert alert-info">
+        <strong>Note:</strong> This platform relies on community-reported data and should be used as an informational resource rather than definitive legal guidance.
+    </div>
+    
+    <h3>Our Mission</h3>
+    <p>We believe that accessible information is a cornerstone of community safety. FRIGID aims to:</p>
+    <ul>
+        <li>Collect and visualize reports of ICE activity in New Jersey</li>
+        <li>Provide educational resources about immigration rights</li>
+        <li>Create transparency around enforcement patterns</li>
+        <li>Empower communities with knowledge to make informed decisions</li>
+    </ul>
+    
+    <h3>How It Works</h3>
+    <p>FRIGID collects data from various sources including social media reports, community organizations, and first-hand accounts. This data is verified to the best of our ability, aggregated, and displayed on an interactive map to show patterns of ICE activity.</p>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Data Collection</div>
+                <div class="card-body">
+                    <p>We gather information from Reddit and other social media platforms, filtering for reports of ICE activity in New Jersey.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Verification</div>
+                <div class="card-body">
+                    <p>Reports are cross-referenced when possible with multiple sources to ensure accuracy.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Visualization</div>
+                <div class="card-body">
+                    <p>Data is plotted on interactive maps showing trends and hotspots of activity.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h3>Data Privacy</h3>
+    <p>We take privacy seriously. All personal identifying information is removed from reports before they are added to our database. We focus only on location data and the nature of enforcement actions.</p>
+    
+    <h3>Disclaimer</h3>
+    <p>The information provided by FRIGID is for educational and informational purposes only. It is not intended to be and should not be interpreted as legal advice. For specific legal guidance regarding immigration matters, please consult with a qualified immigration attorney.</p>
+    
+    <div class="contact-info">
+        <h3>Contact Us</h3>
+        <p>If you have questions, concerns, or would like to report ICE activity, please reach out:</p>
+        <p><strong>Email:</strong> contact@frigidnj.org</p>
+        <p><strong>Community Hotline:</strong> (555) 123-4567</p>
+    </div>
+</div>
+{% endblock %}
