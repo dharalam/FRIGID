@@ -22,7 +22,7 @@ reddit = praw.Reddit(
 # @title Scraper Configuration
 subreddit_name = "newjersey" # @param {type:"string"}
 post_limit = 1000 # @param {type:"slider", min:100, max:1000, step:100}
-output_filename = "./data/reddit_ice_info.csv" # @param {type:"string"}
+output_filename = "./data/reddit_ice_info.tsv" # @param {type:"string"}
 keywords = {"ICE", "immigrant", "detain"}
 
 print(f"⚙️ Targeting r/{subreddit_name} for {post_limit} posts")
@@ -73,7 +73,7 @@ def scrape_subreddit():
 
             for post in batch:
                 for kw in keywords:
-                    if kw in post.title or post.selftext:
+                    if kw in str(post.title) or kw in str(post.selftext) or kw in get_comments(post.id):
                         posts.append({
                             "title": post.title,
                             "selftext": str(post.selftext),
@@ -112,7 +112,7 @@ try:
 
     if df is not None and not df.is_empty():
         # Save to CSV
-        df.write_csv(output_filename, include_header=True)
+        df.write_csv(output_filename, include_header=True, separator='\t')
 except Exception as e:
     print(f"❌ Fatal error: {str(e)}")
 
