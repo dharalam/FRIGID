@@ -30,7 +30,7 @@ print(f"⚙️ Targeting r/{subreddit_name} for {post_limit} posts")
 
 def display_clickable(df):
     df_display = df.copy()
-    df_display['url'] = df['url'].apply(lambda x: f'<a href="{x}" target="_blank">🔗 Link</a>')
+    df_display['url'] = df['url'].apply(lambda x: f'<a href="{x}" target="_blank"> Link</a>')
     return HTML(df_display[['title', 'label', 'url']].to_html(escape=False))
 
 def utc_to_datetime(utc_timestamp):
@@ -60,7 +60,7 @@ def scrape_subreddit():
     last_post = None
     start_time = time.time()
 
-    print(f"⏳ Scanning r/{subreddit_name} for {post_limit} polarized posts...")
+    print(f"Scanning r/{subreddit_name} for {post_limit} posts...")
 
     try:
         while len(posts) < post_limit:
@@ -94,15 +94,15 @@ def scrape_subreddit():
             if len(batch) < 100:
                 break  # Reached end of available posts
 
-        print(f"\n✅ Found {len(posts)} posts in {(time.time()-start_time):.1f}s")
+        print(f"\nFound {len(posts)} posts in {(time.time()-start_time):.1f}s")
         return pl.DataFrame(posts)
 
     except Exception as e:
-        print(f"\n⚠️ Partial results: {len(posts)} posts before error")
+        print(f"\nPartial results: {len(posts)} posts before error")
         print(f"Error: {str(e)}")
         return pl.DataFrame(posts) if posts else None
 
-print("✅ Scraper loaded!")
+print("Scraper loaded!")
 
 try:
     # Scrape data
@@ -112,5 +112,5 @@ try:
         # Save to CSV
         json.dump(df.to_dict(as_series=False), open(output_filename, "w+"))
 except Exception as e:
-    print(f"❌ Fatal error: {str(e)}")
+    print(f"Fatal error: {str(e)}")
 
