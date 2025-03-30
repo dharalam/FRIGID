@@ -16,17 +16,16 @@ def main():
     cursor = None
 
     dict_NER = {}
-    n=50
+    n=20
 
 
     for i in range(n):
         print(f'Page {i}/{n}')
-        params = {'q': 'ice+new jersey', 'limit': 100}
+        params = {'q': 'ice detention+nj', 'limit': 100}
         if cursor:
             params['cursor'] = cursor
         data = client.app.bsky.feed.search_posts(params)
         cursor = data.cursor
-        
         for post in json.loads(data.json())['posts']:
             post_text = post['record']['text']
             out = pipe(post_text)
@@ -42,6 +41,9 @@ def main():
 
                 i+=1
         time.sleep(0.5)
+        if cursor is None:
+            break
+
 
     dict_NER = {k: v for k, v in sorted(dict_NER.items(), key=lambda item: item[1], reverse=True)}
 
