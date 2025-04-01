@@ -7,7 +7,7 @@ def render_template(title:str, active_page:str, block:FT = None, addl:FT =  None
             Meta(charset='utf-8'),
             Meta(name='viewport', content='width=device-width, initial-scale=1.0'),
             Link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css'),
-            Link(rel='stylesheet', href="/static/style.css"),
+            Link(rel='stylesheet', href="./static/style.css"),
         ),
         Body(
             Nav(cls='navbar')(

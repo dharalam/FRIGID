@@ -15,7 +15,7 @@ load_dotenv()
 
 # Create Flask app
 
-app, rt = fh.fast_app(live=True)
+app, rt = fh.fast_app()
 
 messages = []
 
@@ -32,8 +32,8 @@ NJ_CENTER = [(NJ_NORTH + NJ_SOUTH) / 2, (NJ_EAST + NJ_WEST) / 2]
 NJ_CITIES = {}
 
 freqdict = {}
-reddit_df = pl.from_dict(json.load(open("/data/reddit_final_data.json", "r+")))
-ero_df = pl.read_csv("/data/ERO_Twitter.csv", has_header=True)
+reddit_df = pl.from_dict(json.load(open("./data/reddit_final_data.json", "r+")))
+ero_df = pl.read_csv("./data/ERO_Twitter.csv", has_header=True)
 places = reddit_df["place"].to_list() + ero_df["Location"].to_list()
 for place_names in places:
     place_names = place_names.split(",")
