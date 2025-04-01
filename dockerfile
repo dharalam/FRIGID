@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 5001
 
-CMD ["python", "./app/app_fasthtml.py"]
+CMD ["python", "app_fasthtml.py"]

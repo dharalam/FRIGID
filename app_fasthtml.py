@@ -9,7 +9,7 @@ import fasthtml.common as fh
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import ft_base, ft_about, ft_data, ft_error, ft_map, ft_report, ft_rights
+import app.ft_base as ft_base, app.ft_about as ft_about, app.ft_data as ft_data, app.ft_error as ft_error, app.ft_map as ft_map, app.ft_report as ft_report, app.ft_rights as ft_rights
 
 load_dotenv()
 
@@ -32,8 +32,8 @@ NJ_CENTER = [(NJ_NORTH + NJ_SOUTH) / 2, (NJ_EAST + NJ_WEST) / 2]
 NJ_CITIES = {}
 
 freqdict = {}
-reddit_df = pl.from_dict(json.load(open("../data/reddit_final_data.json", "r+")))
-ero_df = pl.read_csv("../data/ERO_Twitter.csv", has_header=True)
+reddit_df = pl.from_dict(json.load(open("/data/reddit_final_data.json", "r+")))
+ero_df = pl.read_csv("/data/ERO_Twitter.csv", has_header=True)
 places = reddit_df["place"].to_list() + ero_df["Location"].to_list()
 for place_names in places:
     place_names = place_names.split(",")
@@ -247,5 +247,5 @@ def post(report:ReportForm, sess):
         messages.append(('error', f'An error occurred: {str(e)}'))
         return report_redirect
 
-if __name__ == '__main__':
-    fh.serve()
+
+fh.serve()
