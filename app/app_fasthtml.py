@@ -5,20 +5,19 @@ from dotenv import load_dotenv
 import polars as pl
 import json
 from geopy.geocoders import Nominatim
-from flask import Flask, render_template, request, redirect, url_for, flash
+import fasthtml.common as fh
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import ft_base, ft_about, ft_data, ft_error, ft_map, ft_report, ft_rights
 
 load_dotenv()
 
 # Create Flask app
-app = Flask(__name__, template_folder='templates')
-app.secret_key = os.urandom(24)  # Needed for flash messages
 
-# Create templates directory if it doesn't exist
-if not os.path.exists('templates'):
-    os.makedirs('templates')
+app, rt = fh.fast_app(live=True)
+
+messages = []
 
 # New Jersey geographic boundaries (approximate)
 NJ_SOUTH = 38.9  # Southern boundary latitude
@@ -166,34 +165,28 @@ def send_report_email(report_data):
     except Exception as e:
         print(f"Error sending email: {str(e)}")
         return False
-
-@app.route('/')
-def map_page():
+    
+report_redirect = fh.RedirectResponse('/report', status_code=303)
+    
+@rt('/')
+def get():
     try:
-        return render_template(
-            'map.html',
-            iframe=iframe,
-            title="Map",
-            active_page="map"
-        )
+        page = ft_base.render_template(title="Map", active_page="map", block=ft_map.map(iframe))
+        return page
     except Exception as e:
-        return render_template(
-            'error.html',
-            error=str(e)
-        )
-
-@app.route('/about')
-def about_page():
-    return render_template(
-        'about.html',
-        title="About",
-        active_page="about"
-    )
-
-@app.route('/data')
-def data_page():
+        return ft_error.error(e)
+        
+@rt('/about')
+def get():
     try:
-        # Convert Polars DataFrame to dict for rendering
+        page = ft_base.render_template(title="About", active_page="about", block=ft_about.about)
+        return page
+    except Exception as e:
+        return ft_error.error(e)
+
+@rt('/data')
+def get():
+    try:
         reddit_dict = reddit_df.select(["title", "url", "place", "when"]).to_dicts()
         reddit_columns = reddit_df.select(["title", "url", "place", "when"]).columns
         
@@ -207,81 +200,52 @@ def data_page():
         # Most reported places (top 5)
         top_places = sorted(freqdict.items(), key=lambda x: x[1], reverse=True)[:5]
         
-        return render_template(
-            'data.html',
-            title="Data",
-            active_page="data",
-            reddit_data=reddit_dict,
-            reddit_columns=reddit_columns,
-            total_reports=total_reports,
-            unique_places=unique_places,
-            top_places=top_places,
-            ero_data = ero_dict,
-            ero_columns = ero_columns
-        )
-    except Exception as e:
-        return render_template(
-            'error.html',
-            title="Data Error",
-            active_page="data",
-            error=str(e)
-        )
-
-@app.route('/rights')
-def rights_page():
-    return render_template(
-        'rights.html',
-        title="Know Your Rights",
-        active_page="rights"
-    )
-
-@app.route('/report', methods=['GET', 'POST'])
-def report_page():
-    if request.method == 'POST':
-        try:
-            # Collect form data
-            report_data = {
-                'location': request.form.get('location', ''),
-                'date': request.form.get('date', ''),
-                'time': request.form.get('time', ''),
-                'description': request.form.get('description', ''),
-                'contact_name': request.form.get('contact_name', ''),
-                'contact_email': request.form.get('contact_email', ''),
-                'contact_phone': request.form.get('contact_phone', ''),
-                'additional_info': request.form.get('additional_info', '')
-            }
-            
-            # Validate required fields
-            if not report_data['location'] or not report_data['date'] or not report_data['description']:
-                flash('Please fill in all required fields.', 'error')
-                return redirect(url_for('report_page'))
-            
-            # Send the report via email
-            if send_report_email(report_data):
-                flash('Your report has been submitted successfully. Thank you for contributing.', 'success')
-                
-                # Add to the frequency dictionary if it's a New Jersey location
-                location = report_data['location'].strip()
-                if location:
-                    if location not in freqdict:
-                        freqdict[location] = 0
-                    freqdict[location] += 1
-                
-                return redirect(url_for('map_page'))
-            else:
-                flash('There was an error submitting your report. Please try again later.', 'error')
-                return redirect(url_for('report_page'))
-                
-        except Exception as e:
-            flash(f'An error occurred: {str(e)}', 'error')
-            return redirect(url_for('report_page'))
+        data = ft_data.render_data(total_reports, unique_places, top_places, reddit_dict, reddit_columns, ero_dict, ero_columns)
+        return ft_base.render_template(title="Data", active_page="data", block=data, addl=ft_data.data_script)
     
-    # For GET requests, just render the form
-    return render_template(
-        'report.html',
-        title="Submit ICE Activity Report",
-        active_page="report"
-    )
+    except Exception as e:
+        return ft_error.error(e)
+
+@rt('/rights')
+def get():
+    try:
+        page = ft_base.render_template(title="Know Your Rights", active_page="rights", block=ft_rights.rights)
+        return page
+    except Exception as e:
+        return ft_error.error(e)
+
+@rt('/report')
+def get():
+    try:
+        page = ft_base.render_template(title="Submit ICE Activity Report", active_page="report", block=ft_report.create_report(messages))
+        return page
+    except Exception as e:
+        return ft_error.error(e)
+
+@fh.dataclass
+class ReportForm: location:str; date:str; time:str; description:str; contact_name:str; contact_email:str; contact_phone:str; additional_info:str; 
+
+@rt('/report')
+def post(report:ReportForm, sess):
+    try:
+        if not report.location or not report.date or not report.description:
+            messages.clear()
+            messages.append(('error', 'Please fill in all required fields.'))
+            return report_redirect
+        report_data = report.__dict__
+        
+        if send_report_email(report_data):
+            messages.clear()
+            messages.append(('success', 'Your report has been submitted successfully. Thank you for contributing.'))
+            return fh.RedirectResponse("/", status_code=303)
+        else:
+            messages.clear()
+            messages.append(('error', 'There was an error submitting your report. Please try again later.'))
+            return report_redirect
+    except Exception as e:
+        messages.clear()
+        messages.append(('error', f'An error occurred: {str(e)}'))
+        return report_redirect
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    fh.serve()
