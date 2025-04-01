@@ -10,6 +10,4 @@ COPY . .
 
 EXPOSE 5001
 
-WORKDIR /app
-
-CMD ["python", "app_fasthtml.py"]
+CMD ["python", "./app/app_fasthtml.py"]
