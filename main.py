@@ -19,6 +19,8 @@ app, rt = fh.fast_app()
 
 messages = []
 
+dark_mode = False
+
 # New Jersey geographic boundaries (approximate)
 NJ_SOUTH = 38.9  # Southern boundary latitude
 NJ_NORTH = 41.4  # Northern boundary latitude
@@ -62,16 +64,22 @@ def generate_intensity_data():
         data.append(point+[scaled])
     return data
 
-def create_nj_map(radius=15):
+def create_nj_map(radius=15, dark_mode=False):
     """Create a folium map with NJ data and heatmap"""
     # Generate map centered on New Jersey
+    # Use a dark tiles option if in dark mode
+    if dark_mode:
+        tiles = 'CartoDB dark_matter'
+    else:
+        tiles = 'CartoDB positron'
+    
     nj_map = folium.Map(location=NJ_CENTER, zoom_start=8, 
-                      tiles='CartoDB positron')
+                      tiles=tiles)
     
     # Create state boundary
     folium.Rectangle(
         bounds=[(NJ_SOUTH, NJ_WEST), (NJ_NORTH, NJ_EAST)],
-        color='blue',
+        color='blue' if not dark_mode else 'lightblue',
         fill=False,
         weight=2
     ).add_to(nj_map)
@@ -102,11 +110,70 @@ def create_nj_map(radius=15):
     
     return nj_map
 
-# Generate map once at startup
-nj_map = create_nj_map(15)
-nj_map.get_root().width = "800px"
-nj_map.get_root().height = "600px"
-iframe = nj_map.get_root()._repr_html_()
+# Generate maps once at startup
+# Generate light and dark maps
+light_map = create_nj_map(15, dark_mode=False)
+dark_map = create_nj_map(15, dark_mode=True)
+
+light_map.get_root().width = "800px"
+light_map.get_root().height = "600px"
+dark_map.get_root().width = "800px"
+dark_map.get_root().height = "600px"
+
+light_iframe = light_map.get_root()._repr_html_()
+dark_iframe = dark_map.get_root()._repr_html_()
+
+# Combine them with a script to toggle visibility based on theme
+combined_map = f"""
+<div id="light-map" class="map-frame">
+    {light_iframe}
+</div>
+<div id="dark-map" class="map-frame" style="display:none;">
+    {dark_iframe}
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {{
+    const lightMap = document.getElementById('light-map');
+    const darkMap = document.getElementById('dark-map');
+    
+    // Initial check and setup
+    function updateMapTheme() {{
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        if (currentTheme === 'dark') {{
+            lightMap.style.display = 'none';
+            darkMap.style.display = 'block';
+        }} else {{
+            lightMap.style.display = 'block';
+            darkMap.style.display = 'none';
+        }}
+    }}
+    
+    // Initial update
+    updateMapTheme();
+    
+    // Listen for theme changes
+    const observer = new MutationObserver(function(mutations) {{
+        mutations.forEach(function(mutation) {{
+            if (mutation.attributeName === 'data-theme') {{
+                updateMapTheme();
+            }}
+        }});
+    }});
+    
+    observer.observe(document.documentElement, {{ attributes: true }});
+    
+    // Also listen for manual theme toggle if applicable
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {{
+        themeToggle.addEventListener('click', function() {{
+            // Let the mutation observer handle the actual change
+            // This just ensures we catch direct toggle clicks too
+            setTimeout(updateMapTheme, 50);
+        }});
+    }}
+}});
+</script>
+"""
 
 # Function to send email with report details
 def send_report_email(report_data):
@@ -171,7 +238,7 @@ report_redirect = fh.RedirectResponse('/report', status_code=303)
 @rt('/')
 def get():
     try:
-        page = ft_base.render_template(title="Map", active_page="map", block=ft_map.map(iframe))
+        page = ft_base.render_template(title="Map", active_page="map", block=ft_map.map(combined_map))
         return page
     except Exception as e:
         return ft_error.error(e)

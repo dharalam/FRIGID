@@ -34,9 +34,8 @@ def create_report(messages:list[tuple[str]]=[]):
                         Li('Speculative information (stick to observed facts)')
                     )
                 ),
-                Hr(),
                 H5('Contact Information (Optional)'),
-                P('Your contact information will be kept confidential and only used if we need to verify details about your report.', cls='text-muted'),
+                P('Your contact information will be kept confidential and only used if we need to verify details about your report.', cls='text-m'),
                 Div(cls='mb-3')(
                     Label('Your Name', fr='contact_name', cls='form-label'),
                     Input(type='text', id='contact_name', name='contact_name', cls='form-control')
@@ -66,8 +65,8 @@ def create_report(messages:list[tuple[str]]=[]):
                         )
                     )
                 ),
-                Div(cls='legal-disclaimer small text-muted')(
-                    P('By submitting, you acknowledge that FRIGID:'),
+                Div(cls='legal-disclaimer small text-m')(
+                    P('By submitting, you acknowledge that FRIGID:', cls="text-m"),
                     Ul(
                         Li('Cannot verify all reports in real-time'),
                         Li('Is not affiliated with any government agency'),

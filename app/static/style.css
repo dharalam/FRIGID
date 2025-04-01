@@ -1,18 +1,76 @@
 :root {
+    /* Light mode variables (default) */
     --primary-color: rgb(157, 21, 53);
     --secondary-color: rgb(148, 149, 148);
     --accent-color: #e74c3c;
     --light-color: #ecf0f1;
     --dark-color: #2c3e50;
+    
+    /* Background and text colors */
+    --bg-color: #f8f9fa;
+    --text-color: #333;
+    --card-bg: white;
+    --header-bg: #ecf0f1;
+    --table-stripe: #f2f2f2;
+    --border-color: #ddd;
+    --table-header-bg: var(--primary-color);
+    --table-header-text: white;
+    
+    /* Card colors */
+    --card-shadow: rgba(0, 0, 0, 0.05);
+    --card-hover-shadow: rgba(0, 0, 0, 0.1);
+    
+    /* Alert colors - keep these accessible in both modes */
+    --alert-warning-bg: #fff3cd;
+    --alert-warning-color: #856404;
+    --alert-warning-border: #ffeeba;
+    
+    --alert-info-bg: #d1ecf1;
+    --alert-info-color: #0c5460;
+    --alert-info-border: #bee5eb;
+    
+    --alert-danger-bg: #f8d7da;
+    --alert-danger-color: #721c24;
+    --alert-danger-border: #f5c6cb;
+}
+
+[data-theme="dark"] {
+    /* Dark mode variable overrides */
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --header-bg: #1a1a1a;
+    --table-stripe: #2a2a2a;
+    --border-color: #444;
+    --table-header-bg: var(--primary-color); /* Keep headers branded */
+    --table-header-text: #f0f0f0;
+    
+    /* Card shadows for dark mode */
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    --card-hover-shadow: rgba(0, 0, 0, 0.4);
+    
+    /* We keep alert colors but slightly adjust for dark mode */
+    --alert-warning-bg: #463c0f;
+    --alert-warning-color: #f8dc75;
+    --alert-warning-border: #6b5b1e;
+    
+    --alert-info-bg: #0f3842;
+    --alert-info-color: #79d4e6;
+    --alert-info-border: #165863;
+    
+    --alert-danger-bg: #481217;
+    --alert-danger-color: #ee8a93;
+    --alert-danger-border: #66181e;
 }
 
 body {
     font-family: 'Roboto', Arial, sans-serif;
     line-height: 1.6;
-    color: #333;
-    background-color: #f8f9fa;
+    color: var(--text-color);
+    background-color: var(--bg-color);
     padding: 0;
     margin: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .navbar {
@@ -66,7 +124,7 @@ body {
 }
 
 .nav-link.active {
-    color: var(--dark-color);
+    color: var(--light-color);
 }
 
 .nav-link.active::after {
@@ -76,7 +134,7 @@ body {
     left: 0;
     width: 100%;
     height: 3px;
-    background-color: var(--dark-color);
+    background-color: var(--light-color);
 }
 
 /* Responsive Navigation - Add hamburger menu for mobile */
@@ -97,10 +155,11 @@ body {
 }
 
 .header {
-    background-color: var(--light-color);
+    background-color: var(--header-bg);
     padding: 2rem 0;
     text-align: center;
     margin-bottom: 2rem;
+    transition: background-color 0.3s ease;
 }
 
 .header h1 {
@@ -112,7 +171,7 @@ body {
 
 .header p {
     margin-top: 0.5rem;
-    color: var(--dark-color);
+    color: var(--text-color);
     font-size: 1.2rem;
 }
 
@@ -124,22 +183,24 @@ body {
 
 .map-container {
     margin: 20px auto;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px var(--card-shadow);
     display: flex;
     justify-content: center;
     max-width: 800px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Data Table Styles */
 .data-container {
     margin-top: 20px;
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px var(--card-shadow);
     padding: 1rem;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .table-container {
@@ -156,26 +217,34 @@ body {
 .table th {
     position: sticky;
     top: 0;
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--table-header-bg);
+    color: var(--table-header-text);
     padding: 1rem;
     text-align: left;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.table tr:nth-child(even) {
-    background-color: #f2f2f2;
+.table tr {
+    background-color: var(--table-stripe);
+    transition: background-color 0.3s ease;
+    color: var(--text-color);
 }
 
 .table td {
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid #ddd;
+    background-color: var(--table-stripe);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+    transition: border-color 0.3s ease, color 0.3s ease;
 }
 
 .data-stats {
-    background-color: var(--light-color);
+    background-color: var(--header-bg);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
+    transition: background-color 0.3s ease;
+    color: var(--text-color)
 }
 
 .data-stats h3 {
@@ -186,18 +255,20 @@ body {
 /* Content Container Styles */
 .content-container {
     margin: 20px auto;
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px var(--card-shadow);
     padding: 2rem;
     max-width: 900px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .content-container h2 {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--light-color);
+    border-bottom: 2px solid var(--border-color);
     padding-bottom: 0.8rem;
+    transition: border-color 0.3s ease;
 }
 
 .content-container h3 {
@@ -209,6 +280,7 @@ body {
 .content-container p {
     margin-bottom: 1.2rem;
     line-height: 1.8;
+    color: var(--text-color)
 }
 
 .content-container ul, .content-container ol {
@@ -225,13 +297,14 @@ body {
     margin-bottom: 1.5rem;
     border: none;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
+    background-color: var(--card-bg);
+    box-shadow: 0 2px 8px var(--card-shadow);
+    transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s ease;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px var(--card-hover-shadow);
 }
 
 .card-header {
@@ -244,13 +317,20 @@ body {
 
 .card-body {
     padding: 1.5rem;
+    background-color: var(--card-bg);
+    transition: background-color 0.3s ease;
+}
+
+.card-title, .card-text, .card ul, .card li{
+    color: var(--text-color)
 }
 
 .contact-info {
-    background-color: var(--light-color);
+    background-color: var(--header-bg);
     padding: 1.5rem;
     border-radius: 8px;
     margin-top: 2rem;
+    transition: background-color 0.3s ease;
 }
 
 .team-member {
@@ -275,21 +355,24 @@ body {
 }
 
 .alert-warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border-left: 4px solid #ffeeba;
+    background-color: var(--alert-warning-bg);
+    color: var(--alert-warning-color);
+    border-left: 4px solid var(--alert-warning-border);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .alert-info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border-left: 4px solid #bee5eb;
+    background-color: var(--alert-info-bg);
+    color: var(--alert-info-color);
+    border-left: 4px solid var(--alert-info-border);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-left: 4px solid #f5c6cb;
+    background-color: var(--alert-danger-bg);
+    color: var(--alert-danger-color);
+    border-left: 4px solid var(--alert-danger-border);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .btn-primary {
@@ -300,6 +383,63 @@ body {
 
 .btn-primary:hover {
     background-color: var(--primary-color);
+}
+
+/* Form styling for dark mode */
+.form-control {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.form-control:focus {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(157, 21, 53, 0.25);
+}
+
+.form-text {
+    color: var(--secondary-color);
+}
+
+/* Style the theme toggle button */
+.theme-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border: none;
+    transition: transform 0.3s, background-color 0.3s;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background-color: var(--secondary-color);
+}
+
+.theme-toggle i {
+    font-size: 20px;
+}
+
+.text-m p, .terms-consent label, .small ul {
+    color: var(--text-color)
+}
+
+/* Additional styles for form interactions in dark mode */
+[data-theme="dark"] .form-control::placeholder {
+    color: #999;
 }
 
 /* Responsive Navigation */
@@ -334,5 +474,10 @@ body {
     
     .content-container {
         padding: 1.5rem;
+    }
+    
+    .theme-toggle {
+        width: 40px;
+        height: 40px;
     }
 }
