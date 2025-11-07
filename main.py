@@ -1,5 +1,4 @@
 import os
-import re
 import html
 import folium
 from folium.plugins import HeatMap
@@ -307,9 +306,6 @@ async def get():
         global combined_map
         if combined_map is None:
             combined_map = await generate_modified_maps()
-        # Return the map HTML as JSON
-        with open("maphtml.html", "w") as f:
-            f.writelines(combined_map)
         # Return a single JSON response containing the HTML string. Avoid
         # returning a tuple (response, redirect) which may confuse the
         # client or the framework and lead to non-JSON payloads.
