@@ -1,4 +1,6 @@
 import os
+import re
+import html
 import folium
 from folium.plugins import HeatMap
 from dotenv import load_dotenv
@@ -9,7 +11,8 @@ import fasthtml.common as fh
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import app.ft_base as ft_base, app.ft_about as ft_about, app.ft_data as ft_data, app.ft_error as ft_error, app.ft_map as ft_map, app.ft_report as ft_report, app.ft_rights as ft_rights
+import asyncio
+import app.ft_base as ft_base, app.ft_about as ft_about, app.ft_data as ft_data, app.ft_error as ft_error, app.ft_map as ft_map, app.ft_report as ft_report, app.ft_rights as ft_rights, app.ft_loading as ft_loading
 
 load_dotenv()
 
@@ -18,6 +21,8 @@ load_dotenv()
 app, rt = fh.fast_app()
 
 messages = []
+
+combined_map = None
 
 dark_mode = False
 
@@ -45,7 +50,7 @@ for place_names in places:
         freqdict[place] += 1
 
 def get_coords_from_name(name):
-    geolocator = Nominatim(user_agent="FRIGID_App")
+    geolocator = Nominatim(user_agent="FRIGID_App", timeout=10)
     location = geolocator.geocode(name)
     if location:
         return [location.latitude, location.longitude]
@@ -112,68 +117,116 @@ def create_nj_map(radius=15, dark_mode=False):
 
 # Generate maps once at startup
 # Generate light and dark maps
-light_map = create_nj_map(15, dark_mode=False)
-dark_map = create_nj_map(15, dark_mode=True)
 
-light_map.get_root().width = "800px"
-light_map.get_root().height = "600px"
-dark_map.get_root().width = "800px"
-dark_map.get_root().height = "600px"
+def sync_load_maps():
+    light_map = create_nj_map(15, dark_mode=False)
+    dark_map = create_nj_map(15, dark_mode=True)
 
-light_iframe = light_map.get_root()._repr_html_()
-dark_iframe = dark_map.get_root()._repr_html_()
+    light_map.get_root().width = "800px"
+    light_map.get_root().height = "600px"
+    dark_map.get_root().width = "800px"
+    dark_map.get_root().height = "600px"
 
-# Combine them with a script to toggle visibility based on theme
-combined_map = f"""
-<div id="light-map" class="map-frame">
-    {light_iframe}
-</div>
-<div id="dark-map" class="map-frame" style="display:none;">
-    {dark_iframe}
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {{
-    const lightMap = document.getElementById('light-map');
-    const darkMap = document.getElementById('dark-map');
-    
-    // Initial check and setup
-    function updateMapTheme() {{
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        if (currentTheme === 'dark') {{
-            lightMap.style.display = 'none';
-            darkMap.style.display = 'block';
-        }} else {{
-            lightMap.style.display = 'block';
-            darkMap.style.display = 'none';
-        }}
-    }}
-    
-    // Initial update
-    updateMapTheme();
-    
-    // Listen for theme changes
-    const observer = new MutationObserver(function(mutations) {{
-        mutations.forEach(function(mutation) {{
-            if (mutation.attributeName === 'data-theme') {{
-                updateMapTheme();
+    # Get the full HTML for each map and embed them inside isolated iframes
+    light_html = light_map.get_root().render()
+    dark_html = dark_map.get_root().render()
+
+    # Escape content for safe insertion into srcdoc attributes
+    light_srcdoc = html.escape(light_html, quote=True)
+    dark_srcdoc = html.escape(dark_html, quote=True)
+
+    light_iframe = f'<iframe id="light-map-iframe" srcdoc="{light_srcdoc}" width="100%" height="600px" style="border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe>'
+    dark_iframe = f'<iframe id="dark-map-iframe" srcdoc="{dark_srcdoc}" width="100%" height="600px" style="border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe>'
+
+    # Combine them with wrappers that will toggle visibility based on theme
+    combined_map = f"""
+    <div id="light-map" class="map-frame">{light_iframe}</div>
+    <div id="dark-map" class="map-frame" style="display:none;">{dark_iframe}</div>
+    <script>
+    // Lightweight theme toggling script — kept minimal because the loader
+    // also wires a global theme handler. This makes maps visible based on
+    // the document's data-theme attribute.
+    (function(){{
+        function updateMapTheme(){{
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const lightMap = document.getElementById('light-map');
+            const darkMap = document.getElementById('dark-map');
+            if (lightMap && darkMap) {{
+                if (currentTheme === 'dark') {{
+                    lightMap.style.display = 'none'; darkMap.style.display = 'block';
+                }} else {{
+                    lightMap.style.display = 'block'; darkMap.style.display = 'none';
+                }}
             }}
+        }}
+        document.addEventListener('DOMContentLoaded', updateMapTheme);
+        const obs = new MutationObserver(function(mutations){{
+            mutations.forEach(function(m){{ if (m.attributeName === 'data-theme') updateMapTheme(); }});
         }});
-    }});
+        obs.observe(document.documentElement, {{ attributes: true }});
+    }})();
+    </script>
+    """
+    return combined_map
+
+async def generate_modified_maps():
+    # Run the map generation in a thread to avoid blocking
+    loop = asyncio.get_event_loop()
     
-    observer.observe(document.documentElement, {{ attributes: true }});
+    def sync_generate_maps():
+        try:
+            light_map: folium.Map = create_nj_map(15, dark_mode=False)
+            dark_map: folium.Map = create_nj_map(15, dark_mode=True)
+            
+            light_map.get_root().width = "100%"
+            light_map.get_root().height = "600px"
+            dark_map.get_root().width = "100%"
+            dark_map.get_root().height = "600px"
+            
+            light_html = light_map.get_root().render()
+            dark_html = dark_map.get_root().render()
+
+            light_srcdoc = html.escape(light_html, quote=True)
+            dark_srcdoc = html.escape(dark_html, quote=True)
+
+            light_iframe = f'<iframe id="light-map-iframe" srcdoc="{light_srcdoc}" width="100%" height="600px" style="border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe>'
+            dark_iframe = f'<iframe id="dark-map-iframe" srcdoc="{dark_srcdoc}" width="100%" height="600px" style="border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe>'
+
+            combined_map = f"""
+            <div id="light-map" class="map-frame">
+                {light_iframe}
+            </div>
+            <div id="dark-map" class="map-frame" style="display:none;">
+                {dark_iframe}
+            </div>
+            <script>
+            (function(){{
+                function updateMapTheme(){{
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    const lightMap = document.getElementById('light-map');
+                    const darkMap = document.getElementById('dark-map');
+                    if (lightMap && darkMap) {{
+                        if (currentTheme === 'dark') {{
+                            lightMap.style.display = 'none'; darkMap.style.display = 'block';
+                        }} else {{
+                            lightMap.style.display = 'block'; darkMap.style.display = 'none';
+                        }}
+                    }}
+                }}
+                document.addEventListener('DOMContentLoaded', updateMapTheme);
+                const obs = new MutationObserver(function(mutations){{
+                    mutations.forEach(function(m){{ if (m.attributeName === 'data-theme') updateMapTheme(); }});
+                }});
+                obs.observe(document.documentElement, {{ attributes: true }});
+            }})();
+            </script>
+            """
+            return combined_map
+        except Exception as e:
+            print(f"Error in map generation: {str(e)}")
+            raise e
     
-    // Also listen for manual theme toggle if applicable
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {{
-        themeToggle.addEventListener('click', function() {{
-            // Let the mutation observer handle the actual change
-            // This just ensures we catch direct toggle clicks too
-            setTimeout(updateMapTheme, 50);
-        }});
-    }}
-}});
-</script>
-"""
+    return await loop.run_in_executor(None, sync_generate_maps)
 
 # Function to send email with report details
 def send_report_email(report_data):
@@ -234,14 +287,36 @@ def send_report_email(report_data):
         return False
     
 report_redirect = fh.RedirectResponse('/report', status_code=303)
+map_redirect = fh.RedirectResponse('/', status_code=303)
     
 @rt('/')
-def get():
+async def get():
+    loading_block = ft_loading.loading_block
+    if combined_map is not None:
+        page = ft_base.render_template(title="Map", active_page="Map", block=ft_map.map(combined_map))
     try:
-        page = ft_base.render_template(title="Map", active_page="map", block=ft_map.map(combined_map))
+        page = ft_base.render_template(title="Map", active_page="map", block=loading_block, addl=ft_loading.loading_script)
         return page
     except Exception as e:
         return ft_error.error(e)
+
+@rt('/api/map-data')
+async def get():
+    try:
+        # Generate maps asynchronously
+        global combined_map
+        if combined_map is None:
+            combined_map = await generate_modified_maps()
+        # Return the map HTML as JSON
+        with open("maphtml.html", "w") as f:
+            f.writelines(combined_map)
+        # Return a single JSON response containing the HTML string. Avoid
+        # returning a tuple (response, redirect) which may confuse the
+        # client or the framework and lead to non-JSON payloads.
+        return fh.JSONResponse({"mapHtml": combined_map}, status_code=200)
+    except Exception as e:
+        # Return error with appropriate status code
+        return fh.JSONResponse({"error": str(e)}, status_code=500)
         
 @rt('/about')
 def get():
@@ -304,7 +379,7 @@ def post(report:ReportForm, sess):
         if send_report_email(report_data):
             messages.clear()
             messages.append(('success', 'Your report has been submitted successfully. Thank you for contributing.'))
-            return fh.RedirectResponse("/", status_code=303)
+            return map_redirect
         else:
             messages.clear()
             messages.append(('error', 'There was an error submitting your report. Please try again later.'))

@@ -97,17 +97,61 @@ def render_template(title:str, active_page:str, block:FT = None, addl:FT =  None
                     };
                     
                     // Initial icon update
-                    updateToggleIcon();
-                    
-                    // Toggle theme
-                    toggleBtn.addEventListener('click', () => {
-                        const currentTheme = document.documentElement.getAttribute('data-theme');
-                        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                        
-                        document.documentElement.setAttribute('data-theme', newTheme);
-                        localStorage.setItem('theme', newTheme);
                         updateToggleIcon();
-                    });
+
+                        // Update icon when theme changes
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach(m => {
+                                if (m.attributeName === 'data-theme') {
+                                    updateToggleIcon();
+                                }
+                            });
+                        });
+                        observer.observe(document.documentElement, { attributes: true });
+
+                        // Ensure a global theme control setup exists so pages that
+                        // don't include the map loader still have delegated toggle
+                        // behavior and consistent persistence.
+                        if (!window.__frigid_setupThemeControls) {
+                            window.__frigid_setupThemeControls = function() {
+                                try {
+                                    const persisted = localStorage.getItem('theme');
+                                    if (persisted) {
+                                        document.documentElement.setAttribute('data-theme', persisted);
+                                    }
+                                } catch (e) { /* ignore */ }
+
+                                // Delegated toggle handler (safe if button is added later)
+                                if (!window.__frigid_toggleDelegated) {
+                                    document.addEventListener('click', function(ev) {
+                                        try {
+                                            const btn = ev.target && (ev.target.closest ? ev.target.closest('#theme-toggle, .theme-toggle, [data-theme-toggle]') : null);
+                                            if (!btn) return;
+                                            const cur = document.documentElement.getAttribute('data-theme');
+                                            const next = (cur === 'dark') ? 'light' : 'dark';
+                                            document.documentElement.setAttribute('data-theme', next);
+                                            try { localStorage.setItem('theme', next); } catch(e) {}
+                                            try { window.__frigid_updateMapTheme && window.__frigid_updateMapTheme(); } catch(e){}
+                                        } catch (e) { console.warn('Theme toggle handler error', e); }
+                                    });
+                                    window.__frigid_toggleDelegated = true;
+                                }
+
+                                // Persist theme changes
+                                if (!window.__frigid_themeObserver) {
+                                    window.__frigid_themeObserver = new MutationObserver(function(mutations) {
+                                        mutations.forEach(function(mutation) {
+                                            if (mutation.attributeName === 'data-theme') {
+                                                try { localStorage.setItem('theme', document.documentElement.getAttribute('data-theme')); } catch(e) {}
+                                            }
+                                        });
+                                    });
+                                    window.__frigid_themeObserver.observe(document.documentElement, { attributes: true });
+                                }
+                            };
+                        }
+
+                        try { window.__frigid_setupThemeControls(); } catch(e) {}
                 });
             """),
             addl
